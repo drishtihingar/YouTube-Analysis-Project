@@ -49,16 +49,23 @@ ChangeSchema_node1699765226409 = ApplyMapping.apply(
     transformation_ctx="ChangeSchema_node1699765226409",
 )
 
+resolvechoice2 = ResolveChoice.apply(frame = ChangeSchema_node1699765226409, choice = "make_struct", transformation_ctx = "resolvechoice2")
+
+dropnullfields3 = DropNullFields.apply(frame = resolvechoice2, transformation_ctx = "dropnullfields3")
+
+
+datasink1 = dropnullfields3.toDF().coalesce(1)
+df_final_output = DynamicFrame.fromDF(datasink1, glueContext, "df_final_output")
+
 # Script generated for node Amazon S3
 AmazonS3_node1699765231245 = glueContext.write_dynamic_frame.from_options(
-    frame=ChangeSchema_node1699765226409,
+    frame=df_final_output,
     connection_type="s3",
-    format="glueparquet",
+    format="parquet",
     connection_options={
         "path": "s3://de-on-youtube-cleansed-ind/youtube/raw_statistics/",
-        "partitionKeys": [],
+        "partitionKeys": ["region"],
     },
-    format_options={"compression": "snappy"},
     transformation_ctx="AmazonS3_node1699765231245",
 )
 
